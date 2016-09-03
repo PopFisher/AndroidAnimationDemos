@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/switch_anim_root"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:layout_width="42dp"
+            android:layout_height="25dp"
+            android:background="@drawable/switch_container" />
+
+        <ImageView
+            android:id="@+id/switch_anim_circle_point"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginLeft="2.5dp"
+            android:layout_marginTop="2.5dp"
+            android:background="@drawable/switch_off_circle_point" />
+    </FrameLayout>
+
+    <ImageView
+        android:id="@+id/finger_switch"
+        android:layout_width="34dp"
+        android:layout_height="41dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="25dp"
+        android:background="@drawable/finger_normal" />
+</merge>
