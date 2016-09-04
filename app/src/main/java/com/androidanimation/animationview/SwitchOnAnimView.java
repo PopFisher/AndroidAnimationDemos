@@ -32,12 +32,15 @@ public class SwitchOnAnimView extends FrameLayout {
     private static final int FINGER_ANIM_DURATION = 300;
     private static final int CIRCLE_PT_ANIM_DURATION = 500;
 
+    private boolean isStopAnim = false;
+
     public SwitchOnAnimView(Context context) {
         this(context, null);
     }
 
     public SwitchOnAnimView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        // 加载布局
         LayoutInflater.from(context).inflate(R.layout.finger_switch_on_guide_layout, this, true);
         initView();
     }
@@ -51,12 +54,23 @@ public class SwitchOnAnimView extends FrameLayout {
         mCirclePtMoveDistance = ViewUtil.dp2px(getContext(), 17.5f);
     }
 
+    /**
+     * 启动动画
+     */
     public void startAnim() {
+        isStopAnim = false;
         // 启动动画之前先恢复初始状态
         ViewHelper.setTranslationX(mCirclePtImgv, 0);
         mCirclePtImgv.setBackgroundResource(R.drawable.switch_off_circle_point);
         mFingerImgv.setBackgroundResource(R.drawable.finger_normal);
         startFingerUpAnim();
+    }
+
+    /**
+     * 停止动画
+     */
+    public void stopAnim() {
+        isStopAnim = true;
     }
 
     /**
@@ -129,6 +143,9 @@ public class SwitchOnAnimView extends FrameLayout {
                 mHandler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
+                        if (isStopAnim) {
+                            return;
+                        }
                         startAnim();
                     }
                 }, 1000);

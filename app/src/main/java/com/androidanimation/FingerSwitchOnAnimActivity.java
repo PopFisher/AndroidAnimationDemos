@@ -1,19 +1,10 @@
 package com.androidanimation;
 
 import android.app.Activity;
-import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
-import android.renderscript.Matrix2f;
-import android.util.TypedValue;
-import android.view.View;
-import android.widget.ImageView;
 
-import com.androidanimation.animations.BaseAnimatorListener;
 import com.androidanimation.animationview.SwitchOnAnimView;
-import com.nineoldandroids.animation.Animator;
-import com.nineoldandroids.animation.ObjectAnimator;
-import com.nineoldandroids.view.ViewHelper;
 
 public class FingerSwitchOnAnimActivity extends Activity {
 
@@ -36,5 +27,11 @@ public class FingerSwitchOnAnimActivity extends Activity {
                 mSwitchOnAnimView.startAnim();
             }
         }, 500);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mSwitchOnAnimView.stopAnim();
     }
 }
