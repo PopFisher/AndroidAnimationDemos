@@ -3,4 +3,4 @@
 
 ## 1. 模拟Android ToggleButton打开动画 ##
 
-![开关动画](/docpic/switch_on_anim.gif "ToggleButton 开关开启动画")
+![开关动画](/docpic/switch_on_anim.GIF "ToggleButton 开关开启动画")
