@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="#ff0f7efa">
+
+    <com.androidanimation.progressanim.sample1.MultiCircleProgressView
+        android:id="@+id/process_animating_state_view"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_gravity="center" />
+
+    <ImageView
+        android:id="@+id/process_finish_success_state_view"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_gravity="center"
+        android:background="@drawable/circle_white_border"
+        android:scaleType="centerInside"
+        android:src="@drawable/state_success"
+        android:visibility="gone" />
+
+    <ImageView
+        android:id="@+id/process_finish_fail_state_view"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_gravity="center"
+        android:background="@drawable/circle_white_border"
+        android:scaleType="centerInside"
+        android:src="@drawable/state_fail"
+        android:visibility="gone" />
+</FrameLayout>

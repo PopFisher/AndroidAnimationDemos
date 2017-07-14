@@ -11,9 +11,7 @@ import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
-import android.view.Surface;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
+import android.view.View;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +20,7 @@ import java.util.List;
  * Created by popfisher on 2017/7/13.
  */
 
-public class MultiCircleProgressView extends SurfaceView implements SurfaceHolder.Callback  {
+public class MultiCircleProgressNormalView extends View {
 
     // ================ 公共数据 ============= //
     /** 顶部作为计数起点, 右边是0，左边是-180或者180，底部是90 */
@@ -37,18 +35,12 @@ public class MultiCircleProgressView extends SurfaceView implements SurfaceHolde
     private Paint mProgressPaint;
     /** 定义监听事件列表 */
     private List<IProgressStateChangeListener> mProgressStateChangeListeners;
-    /** SurfaceView的绘制线程 */
-    private DrawThread mDrawThread;
-    private SurfaceHolder mSurfaceHolder;
-    /** 最大帧数 (1000 / 20) */
-    private static final int DRAW_INTERVAL = 20;
-    private static final int CLEAR_COLOR = 0xff0583f7;
 
     // ================ 外环进度数据 ============= //
     /** 顶部作为计数起点 270度, 计算圆上的任意点坐标时顺时针为正，右边是0 */
     private static final float HEAD_CIRCLE_START_ANGLE = 270f;
     /** 进度条每次移动的角度 */
-    private static int mOuterProgressStep = 6;
+    private static final int OUTER_PROGRESS_STEP = 6;
     /** 修改这个颜色数组就会出现不一样的渐变圆弧 */
     private int[] mColors = {
             0x0004d3ff, 0x0004d3ff, 0x4004d3ff, 0x8004d3ff, 0xff04d3ff
@@ -64,7 +56,7 @@ public class MultiCircleProgressView extends SurfaceView implements SurfaceHolde
     /** 外环的半径 */
     private float mOuterRadius = 0;
     /** 外环角度旋转总进度*/
-    private float mOuterAngleProgressTotal = 0;
+    private int mOuterAngleProgressTotal = 0;
     /** 外环头部圆选择角度 */
     private float mOuterHeadCircleAngleTotal = 0;
     private double mOuterHeadCircleAngleTotalMath = 0;
@@ -77,13 +69,12 @@ public class MultiCircleProgressView extends SurfaceView implements SurfaceHolde
     /** 用于定义的圆弧的形状和大小的界限 */
     private RectF mInnerArcLimitRect = new RectF();
     /** 内环总弧长 */
-    private float mInnerArcAngle = 0;
+    private int mInnerArcAngle = 0;
 
     // ================ 中间百分比数据 ============= //
     private static final int MAX_PROGRESS_DEFAULT = 100;
-    private static final int MIN_PROGRESS_DEFAULT = 1;
     private static final int PERCENT_BASE = 100;
-    private static final float TOTAL_ANGLE = 360f;
+    private static final int TOTAL_ANGLE = 360;
     /** 当前进度 */
     private int mCurProgress = 0;
     private String mCurProgressStr = "";
@@ -103,7 +94,7 @@ public class MultiCircleProgressView extends SurfaceView implements SurfaceHolde
     /** 字体绘制的基线 */
     private float mFontBaseline;
 
-    public MultiCircleProgressView(Context context, AttributeSet attrs) {
+    public MultiCircleProgressNormalView(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
     }
@@ -120,96 +111,19 @@ public class MultiCircleProgressView extends SurfaceView implements SurfaceHolde
         mOuterHeadCircleWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2.5f, metrics);
         mPercentTextSize = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 45, metrics);
         mPercentSignSize = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 15, metrics);
-        mSurfaceHolder = getHolder();
-        mSurfaceHolder.addCallback(this);
-    }
-
-    private void start() {
-        if (mDrawThread == null) {
-            mDrawThread = new DrawThread(mSurfaceHolder, getContext());
-        }
-        mDrawThread.isRunning = true;
-        mDrawThread.start();
-    }
-
-    private void stop() {
-        mDrawThread.isRunning = false;
-        try {
-            mDrawThread.join();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
-    public void surfaceCreated(SurfaceHolder holder) {
-        start();
-    }
-
-    @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) { }
-
-    @Override
-    public void surfaceDestroyed(SurfaceHolder holder) {
-        stop();
-    }
-
-    class DrawThread extends Thread {
-        SurfaceHolder surfaceHolder;
-        Context context;
-        boolean isRunning;
-
-        public DrawThread(SurfaceHolder surfaceHolder, Context context) {
-            this.surfaceHolder = surfaceHolder;
-            this.context = context;
-        }
-
-        @Override
-        public void run() {
-            long deltaTime = 0;
-            long tickTime = System.currentTimeMillis();
-            while (isRunning) {
-                Canvas canvas = null;
-                try {
-                    synchronized (surfaceHolder) {
-                        Surface surface = surfaceHolder.getSurface();
-                        if (surface != null && surface.isValid()) {
-                            canvas = surfaceHolder.lockCanvas(null);
-                        }
-                        if (canvas != null) {
-                            doDraw(canvas);
-                        }
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    if (surfaceHolder != null && canvas != null) {
-                        try {
-                            surfaceHolder.unlockCanvasAndPost(canvas);
-                        } catch (Exception ignore) {}
-                    }
-                }
-
-                deltaTime = System.currentTimeMillis() - tickTime;
-                if (deltaTime < DRAW_INTERVAL) {
-                    try {
-                        // 控制帧数
-                        Thread.sleep(DRAW_INTERVAL - deltaTime);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }
+    protected void onDraw(Canvas canvas) {
+        doDraw(canvas);
     }
 
     private void doDraw(Canvas canvas) {
         calculatePreValue();
-        //清屏操作
-        canvas.drawColor(CLEAR_COLOR);
         drawOuterGradientProgress(canvas);
         drawInnerProgress(canvas);
         drawPercentText(canvas);
+        postInvalidate();
     }
 
     private void calculatePreValue() {
@@ -238,7 +152,7 @@ public class MultiCircleProgressView extends SurfaceView implements SurfaceHolde
         mProgressPaint.setShader(mOuterSweepGradient);
         canvas.drawCircle(mCenterX, mCenterY, mOuterRadius, mProgressPaint); // 画出圆环
         drawOuterArcHeadCircle(canvas);
-        mOuterAngleProgressTotal += mOuterProgressStep;
+        mOuterAngleProgressTotal += OUTER_PROGRESS_STEP;
         if (mOuterAngleProgressTotal > TOTAL_ANGLE) {
             mOuterAngleProgressTotal -= TOTAL_ANGLE;
         }
@@ -250,8 +164,8 @@ public class MultiCircleProgressView extends SurfaceView implements SurfaceHolde
         mProgressPaint.setStyle(Paint.Style.FILL);
         // 一开始从顶部开始旋转
         mOuterHeadCircleAngleTotal = (HEAD_CIRCLE_START_ANGLE + mOuterAngleProgressTotal);
-        if (mOuterHeadCircleAngleTotal - TOTAL_ANGLE > 0) {
-            mOuterHeadCircleAngleTotal -= TOTAL_ANGLE;
+        if (mOuterHeadCircleAngleTotal - 360f > 0) {
+            mOuterHeadCircleAngleTotal -= 360f;
         }
         // 根据旋转角度计算圆上当前位置点坐标，再以当前位置左边点位圆心画一个圆
         mOuterHeadCircleAngleTotalMath = mOuterHeadCircleAngleTotal * Math.PI / 180f;
@@ -296,28 +210,26 @@ public class MultiCircleProgressView extends SurfaceView implements SurfaceHolde
     }
 
     /**
-     * progress的范围 0~360
-     * @param angle
+     * progress的范围 0~100
+     * @param progress
      */
-    public void setAngle(float angle) {
-        if (angle - TOTAL_ANGLE > 0) {
-            angle = TOTAL_ANGLE;
-        } else if (angle < 0) {
-            angle = 0;
+    public void setProgress(int progress) {
+        if (progress < 0) {
+            throw new IllegalArgumentException("progress not less than 0");
         }
-        mInnerArcAngle = angle;
-        mCurProgress = (int) (mInnerArcAngle / TOTAL_ANGLE * PERCENT_BASE);
-        if (mCurProgress < MIN_PROGRESS_DEFAULT) {
-            mCurProgress = MIN_PROGRESS_DEFAULT;
-        } else if (mCurProgress > MAX_PROGRESS_DEFAULT) {
-            mCurProgress = MAX_PROGRESS_DEFAULT;
+        if (progress > MAX_PROGRESS_DEFAULT) {
+            progress = MAX_PROGRESS_DEFAULT;
+        } else if (progress < 0) {
+            progress = 0;
         }
+        mCurProgress = progress;
+        mInnerArcAngle = TOTAL_ANGLE * progress / PERCENT_BASE;
         mCurProgressStr = "" + mCurProgress;
         notifyProgressStateChangeListeners();
     }
 
-    public float getAngle() {
-        return mInnerArcAngle;
+    public int getProgress() {
+        return mCurProgress;
     }
 
     public interface IProgressStateChangeListener {
