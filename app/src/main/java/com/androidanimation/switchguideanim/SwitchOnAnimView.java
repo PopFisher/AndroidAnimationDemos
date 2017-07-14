@@ -1,4 +1,4 @@
-package com.androidanimation.animationview;
+package com.androidanimation.switchguideanim;
 
 import android.content.Context;
 import android.os.Handler;

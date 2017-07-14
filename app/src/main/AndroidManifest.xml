@@ -16,8 +16,8 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".FingerSwitchOnAnimActivity" >
-        </activity>
+        <activity android:name=".switchguideanim.FingerSwitchOnAnimActivity" />
+        <activity android:name=".progressanim.ProgressActivity" />
     </application>
 
 </manifest>

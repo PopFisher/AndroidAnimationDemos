@@ -1,10 +1,10 @@
-package com.androidanimation;
+package com.androidanimation.switchguideanim;
 
 import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
 
-import com.androidanimation.animationview.SwitchOnAnimView;
+import com.androidanimation.R;
 
 public class FingerSwitchOnAnimActivity extends Activity {
 

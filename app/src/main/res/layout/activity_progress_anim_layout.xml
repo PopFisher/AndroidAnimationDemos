@@ -12,19 +12,13 @@
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:gravity="center"
-        android:text="Android动画使用案例"
+        android:text="Android Progress相关动画使用案例"
         android:textColor="@color/colorAccent"/>
 
-    <Button
-        android:id="@+id/finger_switch_on_anim_activity"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="手势滑动开关动画"/>
-
-    <Button
-        android:id="@+id/progress_anim_activity"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="圆形进度相关动画"/>
+    <com.androidanimation.progressanim.sample1.MultiCircleProgressView
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:background="#ff0f7efa"
+        android:layout_gravity="center_horizontal"/>
 
 </LinearLayout>

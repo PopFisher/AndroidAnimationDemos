@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:gravity="center"
     android:orientation="vertical">
-    <com.androidanimation.animationview.SwitchOnAnimView
+    <com.androidanimation.switchguideanim.SwitchOnAnimView
         android:id="@+id/switch_on_anim_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
