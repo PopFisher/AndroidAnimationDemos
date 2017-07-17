@@ -3,6 +3,8 @@ package com.androidanimation.progressanim.sample1;
 import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.annotation.TargetApi;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -25,6 +27,7 @@ public class MultiProgressStateViewController {
     /** 是否需要进度，蒙层上需要，Activity里面只需要结果 */
     private boolean mIsNeedProgress = true;
     private ProgressController mProgressController;
+    private Handler mHandler = new Handler(Looper.getMainLooper());
 
 
     /**
@@ -61,15 +64,20 @@ public class MultiProgressStateViewController {
             mProgressStateChangeListener = new MultiCircleProgressView.IProgressStateChangeListener() {
         @Override
         public void onFinished() {
-            startChangeStateAnim(mIsSuccess);
+            mHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    startChangeStateAnim();
+                }
+            }, 1000);
         }
     };
 
-    private void startChangeStateAnim(final boolean isSuccess) {
+    private void startChangeStateAnim() {
         hideProgressView(new Runnable() {
             @Override
             public void run() {
-                showResultStateView(isSuccess);
+                showResultStateView();
             }
         });
     }
@@ -95,8 +103,8 @@ public class MultiProgressStateViewController {
         valueAnimator.start();
     }
 
-    private void showResultStateView(final boolean isSuccess) {
-        final View targetView = isSuccess ? mSuccessStateView : mFailStateView;
+    private void showResultStateView() {
+        final View targetView = mIsSuccess ? mSuccessStateView : mFailStateView;
         ValueAnimator valueAnimator = ValueAnimator.ofFloat(0.0f, 1.0f);
         valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
@@ -109,7 +117,7 @@ public class MultiProgressStateViewController {
             @Override
             public void onAnimationEnd(Animator animator) {
                 if (mViewStateChangeListener != null) {
-                    mViewStateChangeListener.onResultViewShowFinish(isSuccess);
+                    mViewStateChangeListener.onResultViewShowFinish(mIsSuccess);
                 }
             }
             @Override
@@ -135,12 +143,13 @@ public class MultiProgressStateViewController {
         setViewStateChangeListener(listener);
         mIsSuccess = success;
         if (mIsNeedProgress) {
-            mProgressController.completeProgress();
+            mProgressStateView.completeQuickly();
+//            mProgressController.completeProgress();
         } else {
-            mSuccessStateView.setVisibility(success ? View.VISIBLE : View.GONE);
-            mFailStateView.setVisibility(success ? View.GONE : View.VISIBLE);
+            mSuccessStateView.setVisibility(mIsSuccess ? View.VISIBLE : View.GONE);
+            mFailStateView.setVisibility(mIsSuccess ? View.GONE : View.VISIBLE);
             if (listener != null) {
-                listener.onResultViewShowFinish(success);
+                listener.onResultViewShowFinish(mIsSuccess);
             }
         }
     }

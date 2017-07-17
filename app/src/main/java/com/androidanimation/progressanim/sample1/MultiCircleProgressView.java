@@ -4,8 +4,10 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.Region;
 import android.graphics.SweepGradient;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
@@ -63,6 +65,8 @@ public class MultiCircleProgressView extends SurfaceView implements SurfaceHolde
     private float mOuterHeadCircleWidth;
     /** 外环的半径 */
     private float mOuterRadius = 0;
+    /** 外环背景的半径 */
+    private float mOuterBgRadius = 0;
     /** 外环角度旋转总进度*/
     private float mOuterAngleProgressTotal = 0;
     /** 外环头部圆选择角度 */
@@ -115,6 +119,7 @@ public class MultiCircleProgressView extends SurfaceView implements SurfaceHolde
         mOuterRoundWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2, metrics);
         mInnerRoundWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 5, metrics);
         mOuterRadius = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 70, metrics);
+        mOuterBgRadius = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 75, metrics);
         mInnerRadius = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 60, metrics);
         mSpaceTextAndSign = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, metrics);
         mOuterHeadCircleWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2.5f, metrics);
@@ -122,6 +127,17 @@ public class MultiCircleProgressView extends SurfaceView implements SurfaceHolde
         mPercentSignSize = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 15, metrics);
         mSurfaceHolder = getHolder();
         mSurfaceHolder.addCallback(this);
+    }
+
+    /** 剩下需要快速完成的角度 */
+    private float mNeedQuickCompleteAngle = 0;
+    /** 开始快速完成时的角度起始值 */
+    private float mQuickStartAngle = 0;
+    /** 是否需要快速完成 */
+    private boolean isNeedCompleteQuickly = false;
+    public void completeQuickly() {
+        isNeedCompleteQuickly = true;
+        mQuickStartAngle = 0;
     }
 
     private void start() {
@@ -166,21 +182,47 @@ public class MultiCircleProgressView extends SurfaceView implements SurfaceHolde
 
         @Override
         public void run() {
-            long deltaTime = 0;
-            long tickTime = System.currentTimeMillis();
+            long deltaTime;
+            long timeStartPerDraw;
+            long timerStartMillis = System.currentTimeMillis();
             while (isRunning) {
                 Canvas canvas = null;
+                timeStartPerDraw = System.currentTimeMillis();
                 try {
                     synchronized (surfaceHolder) {
                         Surface surface = surfaceHolder.getSurface();
                         if (surface != null && surface.isValid()) {
                             canvas = surfaceHolder.lockCanvas(null);
                         }
+                        if (isNeedCompleteQuickly) {
+                            if (mQuickStartAngle == 0) {
+                                timerStartMillis = System.currentTimeMillis();
+                                mQuickStartAngle = getAngle();
+                                mNeedQuickCompleteAngle = 360f - mQuickStartAngle;
+                            }
+                            deltaTime = System.currentTimeMillis() - timerStartMillis;
+                            if (deltaTime <= 2000) {    // 快速结束时2秒走完剩下的
+                                setAngle(mQuickStartAngle + mNeedQuickCompleteAngle / 2000f * deltaTime);
+                            } else {
+                                setAngle(360f);
+                            }
+                        } else {
+                            deltaTime = System.currentTimeMillis() - timerStartMillis;
+                            if (deltaTime <= 10000) {   // 前10秒每秒走5% 即18度
+                                setAngle(180f / 10000f * deltaTime);
+                            } else if (deltaTime <= 30000f) {    // 20秒到30秒走175度
+                                setAngle(180f + (175f / 20000f * (deltaTime - 10000)));
+                            }
+                        }
                         if (canvas != null) {
                             doDraw(canvas);
+                            if (getAngle() - 360f >= 0) {
+                                isRunning = false;
+                            }
                         }
                     }
                 } catch (Exception e) {
+                    isRunning = false;
                     e.printStackTrace();
                 } finally {
                     if (surfaceHolder != null && canvas != null) {
@@ -190,7 +232,7 @@ public class MultiCircleProgressView extends SurfaceView implements SurfaceHolde
                     }
                 }
 
-                deltaTime = System.currentTimeMillis() - tickTime;
+                deltaTime = System.currentTimeMillis() - timeStartPerDraw;
                 if (deltaTime < DRAW_INTERVAL) {
                     try {
                         // 控制帧数
@@ -203,10 +245,28 @@ public class MultiCircleProgressView extends SurfaceView implements SurfaceHolde
         }
     }
 
+    private Path mBgCirclePath = new Path();
+    @Override
+    public void draw(Canvas canvas) {
+//        clipCanvas(canvas);
+        super.draw(canvas);
+    }
+
+    private void clipCanvas(Canvas canvas) {
+        // 裁剪画布为一个圆，但是有锯齿啊。。。
+        // 设置裁剪的圆心，半径
+        if (mCenterX != 0) {
+            mBgCirclePath.addCircle(mCenterX, mCenterY, mOuterBgRadius, Path.Direction.CCW);
+        } else {
+            mBgCirclePath.addCircle(getHeight() / 2, getHeight() / 2, getHeight() / 2, Path.Direction.CCW);
+        }
+        // 裁剪画布，并设置其填充方式
+        canvas.clipPath(mBgCirclePath, Region.Op.REPLACE);
+    }
+
     private void doDraw(Canvas canvas) {
         calculatePreValue();
-        //清屏操作
-        canvas.drawColor(CLEAR_COLOR);
+        drawBg(canvas);
         drawOuterGradientProgress(canvas);
         drawInnerProgress(canvas);
         drawPercentText(canvas);
@@ -222,6 +282,13 @@ public class MultiCircleProgressView extends SurfaceView implements SurfaceHolde
         if (mInnerArcLimitRect.isEmpty()) {
             mInnerArcLimitRect.set(mCenterX - mInnerRadius, mCenterX - mInnerRadius, mCenterX + mInnerRadius, mCenterX + mInnerRadius);
         }
+    }
+
+    private void drawBg(Canvas canvas) {
+        canvas.drawColor(CLEAR_COLOR);
+        mProgressPaint.setColor(CLEAR_COLOR);       // 设置进度的颜色
+        mProgressPaint.setStyle(Paint.Style.FILL);
+        canvas.drawCircle(mCenterX, mCenterY, mOuterBgRadius, mProgressPaint); // 画出圆环
     }
 
     private void drawOuterGradientProgress(final Canvas canvas) {

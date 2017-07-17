@@ -18,6 +18,10 @@ public class MultiProcessStateView extends FrameLayout {
     private ImageView mSuccessStateView;
     private ImageView mFailStateView;
 
+    public MultiProcessStateView(Context context) {
+        this(context, null);
+    }
+
     public MultiProcessStateView(Context context, AttributeSet attrs) {
         super(context, attrs);
         initViews();

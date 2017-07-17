@@ -6,6 +6,7 @@ import android.annotation.TargetApi;
 
 /**
  * Created by popfisher on 2017/7/14.
+ * 这个运行在UI线程，所以在没有性能瓶颈的情况下比较好控制进度的变化，运行在UI线程会掉帧导致动画不流畅
  */
 
 @TargetApi(11)
