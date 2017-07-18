@@ -179,7 +179,7 @@ public class MultiProgressStateViewController {
     public void smoothScrollToProgress(int progress, ISmoothScrollListener listener) {
         setSmoothScrollListener(listener);
         if (mIsNeedProgress) {
-
+            mProgressController.smoothScrollToProgress(progress); // 走到90%停止
         }
     }
 

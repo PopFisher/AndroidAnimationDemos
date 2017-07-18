@@ -19,7 +19,7 @@
         android:layout_width="150dp"
         android:layout_height="150dp"
         android:layout_gravity="center_horizontal"
-        android:background="@android:color/transparent" />
+        android:background="#ff0583f7" />
 
     <LinearLayout
         android:layout_width="wrap_content"

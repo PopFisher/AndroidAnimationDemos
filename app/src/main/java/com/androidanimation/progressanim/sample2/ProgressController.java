@@ -42,6 +42,20 @@ public class ProgressController {
         completeAnim();
     }
 
+    public void smoothScrollToProgress(int progress) {
+        if (progress <= 1 || progress >= 100) {
+            return;
+        }
+        smoothScrollToAngle(progress * 360f / 100f);
+    }
+
+    private void smoothScrollToAngle(float angle) {
+        if (angle - mProgressStateView.getAngle() <= 0) {
+            return;
+        }
+        completeAnim(angle);
+    }
+
     private void startFirstAnim() {
         mFirstValueAnimator = ValueAnimator.ofFloat(0, FIRST_END_ANGLE);
         mFirstValueAnimator.setDuration(FIRST_DURATION);
@@ -81,10 +95,14 @@ public class ProgressController {
     }
 
     private void completeAnim() {
+        completeAnim(LAST_END_ANGLE);
+    }
+
+    private void completeAnim(float angle) {
         mFirstValueAnimator.cancel();
         mSecondValueAnimator.cancel();
 
-        mCompleteValueAnimator = ValueAnimator.ofFloat(mProgressStateView.getAngle(), LAST_END_ANGLE);
+        mCompleteValueAnimator = ValueAnimator.ofFloat(mProgressStateView.getAngle(), angle);
         mCompleteValueAnimator.setDuration(LAST_DURATION);
         mCompleteValueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
