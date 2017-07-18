@@ -1,4 +1,4 @@
-package com.androidanimation.progressanim.sample1;
+package com.androidanimation.progressanim.sample2;
 
 import android.animation.Animator;
 import android.animation.ValueAnimator;
@@ -10,6 +10,7 @@ import android.widget.ImageView;
 
 import com.androidanimation.progressanim.BaseAnimatorListener;
 import com.nineoldandroids.view.ViewHelper;
+
 /**
  * Created by yzs on 2017/7/14.
  * 圆形进度控件总逻辑控制器，包括状态切换，进度动画逻辑控制
@@ -19,7 +20,7 @@ import com.nineoldandroids.view.ViewHelper;
 public class MultiProgressStateViewController {
 
     private static final int STATE_CHANGE_ANIM_DURATION = 500;
-    private MultiCircleProgressView mProgressStateView;
+    private MultiCircleProgressNormalView mProgressStateView;
     private ImageView mSuccessStateView;
     private ImageView mFailStateView;
 
@@ -27,6 +28,7 @@ public class MultiProgressStateViewController {
     private boolean mIsSuccess = false;
     /** 是否需要进度，蒙层上需要，Activity里面只需要结果 */
     private boolean mIsNeedProgress = true;
+    private ProgressController mProgressController;
     private Handler mHandler = new Handler(Looper.getMainLooper());
 
 
@@ -67,14 +69,15 @@ public class MultiProgressStateViewController {
         mFailStateView = multiProcessStateView.getFailStateView();
         mIsNeedProgress = isNeedProgress;
         if (isNeedProgress) {
+            mProgressController = new ProgressController(mProgressStateView);
             mProgressStateView.addProgressStateListener(mProgressStateChangeListener);
         } else {
             mProgressStateView.setVisibility(View.GONE);
         }
     }
 
-    private MultiCircleProgressView.IProgressStateChangeListener
-            mProgressStateChangeListener = new MultiCircleProgressView.IProgressStateChangeListener() {
+    private MultiCircleProgressNormalView.IProgressStateChangeListener
+            mProgressStateChangeListener = new MultiCircleProgressNormalView.IProgressStateChangeListener() {
         @Override
         public void onFinished() {
             mHandler.postDelayed(new Runnable() {
@@ -149,6 +152,11 @@ public class MultiProgressStateViewController {
         valueAnimator.start();
     }
 
+    public void start() {
+        if (mProgressController != null) {
+            mProgressController.autoStartAnim();
+        }
+    }
 
     public void complete(boolean success) {
         complete(success, null);
@@ -158,7 +166,7 @@ public class MultiProgressStateViewController {
         setViewStateChangeListener(listener);
         mIsSuccess = success;
         if (mIsNeedProgress) {
-            mProgressStateView.completeQuickly();
+            mProgressController.completeProgress();
         } else {
             mSuccessStateView.setVisibility(mIsSuccess ? View.VISIBLE : View.GONE);
             mFailStateView.setVisibility(mIsSuccess ? View.GONE : View.VISIBLE);
@@ -171,11 +179,14 @@ public class MultiProgressStateViewController {
     public void smoothScrollToProgress(int progress, ISmoothScrollListener listener) {
         setSmoothScrollListener(listener);
         if (mIsNeedProgress) {
-            mProgressStateView.smoothScrollToProgress(progress);
+
         }
     }
 
     public void onDestroy() {
+        if (mProgressController != null) {
+            mProgressController.onDestroy();
+        }
         if (mProgressStateView != null) {
             mProgressStateView.onDestroy();
         }

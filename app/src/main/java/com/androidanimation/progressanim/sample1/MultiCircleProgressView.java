@@ -136,22 +136,52 @@ public class MultiCircleProgressView extends SurfaceView implements SurfaceHolde
     /** 是否需要快速完成 */
     private boolean isNeedCompleteQuickly = false;
     public void completeQuickly() {
+        smoothScrollToAngle(TOTAL_ANGLE);
+    }
+
+    private float mSmoothScrollToAngle = 0;
+    /**
+     * 平滑旋转到指定的角度（0~360度）
+     * @param angle 0~360度
+     */
+    private void smoothScrollToAngle(float angle) {
         isNeedCompleteQuickly = true;
         mQuickStartAngle = 0;
+        mSmoothScrollToAngle = angle;
+    }
+
+    private int mSmoothScrollToProgress = 0;
+    /**
+     * 平滑旋转到指定的进度（0~100）
+     * @param progress
+     */
+    public void smoothScrollToProgress(int progress) {
+        if (progress <= MIN_PROGRESS_DEFAULT || progress >= MAX_PROGRESS_DEFAULT) {
+            return;
+        }
+        mSmoothScrollToProgress = progress;
+        smoothScrollToAngle(progress * TOTAL_ANGLE / PERCENT_BASE);
     }
 
     private void start() {
         if (mDrawThread == null) {
             mDrawThread = new DrawThread(mSurfaceHolder, getContext());
         }
-        mDrawThread.isRunning = true;
-        mDrawThread.start();
+        try {
+            if (!mDrawThread.isRunning) {
+                mDrawThread.isRunning = true;
+                mDrawThread.start();
+            }
+        } catch (Exception ignore) {
+            ignore.printStackTrace();
+        }
     }
 
     private void stop() {
         mDrawThread.isRunning = false;
         try {
             mDrawThread.join();
+            mDrawThread = null;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -185,6 +215,9 @@ public class MultiCircleProgressView extends SurfaceView implements SurfaceHolde
             long deltaTime;
             long timeStartPerDraw;
             long timerStartMillis = System.currentTimeMillis();
+            float totalAngle = TOTAL_ANGLE;
+            float step1 = 180f / 10000f; // 前10秒每秒走5% 即18度
+            float step2 = 175f / 20000f; // 10秒到30秒走175度
             while (isRunning) {
                 Canvas canvas = null;
                 timeStartPerDraw = System.currentTimeMillis();
@@ -198,31 +231,31 @@ public class MultiCircleProgressView extends SurfaceView implements SurfaceHolde
                             if (mQuickStartAngle == 0) {
                                 timerStartMillis = System.currentTimeMillis();
                                 mQuickStartAngle = getAngle();
-                                mNeedQuickCompleteAngle = 360f - mQuickStartAngle;
+                                totalAngle = mSmoothScrollToAngle;
+                                mNeedQuickCompleteAngle = totalAngle - mQuickStartAngle;
+                                if (mNeedQuickCompleteAngle < 0) {
+                                    mNeedQuickCompleteAngle = 0;
+                                }
                             }
                             deltaTime = System.currentTimeMillis() - timerStartMillis;
                             if (deltaTime <= 2000) {    // 快速结束时2秒走完剩下的
                                 setAngle(mQuickStartAngle + mNeedQuickCompleteAngle / 2000f * deltaTime);
                             } else {
-                                setAngle(360f);
+                                setAngle(totalAngle);
                             }
                         } else {
                             deltaTime = System.currentTimeMillis() - timerStartMillis;
-                            if (deltaTime <= 10000) {   // 前10秒每秒走5% 即18度
-                                setAngle(180f / 10000f * deltaTime);
-                            } else if (deltaTime <= 30000f) {    // 20秒到30秒走175度
-                                setAngle(180f + (175f / 20000f * (deltaTime - 10000)));
+                            if (deltaTime <= 10000) {   // 前10秒每秒走5% 即18度，总共走掉180度
+                                setAngle(step1 * deltaTime);
+                            } else if (deltaTime <= 30000f) { // 10秒到30秒走175度
+                                setAngle(180f + (step2 * (deltaTime - 10000)));
                             }
                         }
                         if (canvas != null) {
                             doDraw(canvas);
-                            if (getAngle() - 360f >= 0) {
-                                isRunning = false;
-                            }
                         }
                     }
                 } catch (Exception e) {
-                    isRunning = false;
                     e.printStackTrace();
                 } finally {
                     if (surfaceHolder != null && canvas != null) {
@@ -373,12 +406,16 @@ public class MultiCircleProgressView extends SurfaceView implements SurfaceHolde
             angle = 0;
         }
         mInnerArcAngle = angle;
-        mCurProgress = (int) (mInnerArcAngle / TOTAL_ANGLE * PERCENT_BASE);
-        if (mCurProgress < MIN_PROGRESS_DEFAULT) {
-            mCurProgress = MIN_PROGRESS_DEFAULT;
-        } else if (mCurProgress > MAX_PROGRESS_DEFAULT) {
-            mCurProgress = MAX_PROGRESS_DEFAULT;
+        int progress = (int) (mInnerArcAngle / TOTAL_ANGLE * PERCENT_BASE);
+        if (progress == mCurProgress) { // 相同进度不重复设置，避免notify重复通知
+            return;
         }
+        if (progress < MIN_PROGRESS_DEFAULT) {
+            progress = MIN_PROGRESS_DEFAULT;
+        } else if (progress > MAX_PROGRESS_DEFAULT) {
+            progress = MAX_PROGRESS_DEFAULT;
+        }
+        mCurProgress = progress;
         mCurProgressStr = "" + mCurProgress;
         notifyProgressStateChangeListeners();
     }
@@ -388,14 +425,28 @@ public class MultiCircleProgressView extends SurfaceView implements SurfaceHolde
     }
 
     public interface IProgressStateChangeListener {
+        /** 进度执行到100%时回调 */
         void onFinished();
+        /** 执行到外部指定的进度回调 */
+        void onSmoothScrollFinish();
     }
 
     private void notifyProgressStateChangeListeners() {
+        if (mProgressStateChangeListeners == null) {
+            return;
+        }
         if (mCurProgress == MAX_PROGRESS_DEFAULT) {
             for (IProgressStateChangeListener listener : mProgressStateChangeListeners) {
                 if (listener != null) {
                     listener.onFinished();
+                }
+            }
+            return;
+        }
+        if (mCurProgress == mSmoothScrollToProgress) {
+            for (IProgressStateChangeListener listener : mProgressStateChangeListeners) {
+                if (listener != null) {
+                    listener.onSmoothScrollFinish();
                 }
             }
         }

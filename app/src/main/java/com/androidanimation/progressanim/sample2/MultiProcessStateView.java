@@ -1,4 +1,4 @@
-package com.androidanimation.progressanim.sample1;
+package com.androidanimation.progressanim.sample2;
 
 import android.content.Context;
 import android.util.AttributeSet;
@@ -13,7 +13,7 @@ import com.androidanimation.R;
  */
 
 public class MultiProcessStateView extends FrameLayout {
-    private MultiCircleProgressView mProgressStateView;
+    private MultiCircleProgressNormalView mProgressStateNormalView;
     private ImageView mSuccessStateView;
     private ImageView mFailStateView;
 
@@ -27,14 +27,14 @@ public class MultiProcessStateView extends FrameLayout {
     }
 
     private void initViews() {
-        LayoutInflater.from(getContext()).inflate(R.layout.multi_process_state_surface_layout, this, true);
-        mProgressStateView = (MultiCircleProgressView) findViewById(R.id.process_animating_state_view);
+        LayoutInflater.from(getContext()).inflate(R.layout.multi_process_state_normal_layout, this, true);
+        mProgressStateNormalView = (MultiCircleProgressNormalView) findViewById(R.id.process_animating_state_view);
         mSuccessStateView = (ImageView) findViewById(R.id.process_finish_success_state_view);
         mFailStateView = (ImageView) findViewById(R.id.process_finish_fail_state_view);
     }
 
-    public MultiCircleProgressView getProgressStateView() {
-        return mProgressStateView;
+    public MultiCircleProgressNormalView getProgressStateView() {
+        return mProgressStateNormalView;
     }
 
     public ImageView getSuccessStateView() {

@@ -1,8 +1,10 @@
-package com.androidanimation.progressanim.sample1;
+package com.androidanimation.progressanim.sample2;
 
 import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.annotation.TargetApi;
+
+import com.androidanimation.progressanim.BaseAnimatorListener;
 
 /**
  * Created by popfisher on 2017/7/14.
@@ -21,12 +23,12 @@ public class ProgressController {
 
     /** 是否需要快速完成剩下的进度 */
     private boolean isCompleteProgress = false;
-    private MultiCircleProgressView mProgressStateView;
+    private MultiCircleProgressNormalView mProgressStateView;
     private ValueAnimator mFirstValueAnimator;
     private ValueAnimator mSecondValueAnimator;
     private ValueAnimator mCompleteValueAnimator;
 
-    public ProgressController(MultiCircleProgressView progressStateView) {
+    public ProgressController(MultiCircleProgressNormalView progressStateView) {
         mProgressStateView = progressStateView;
     }
 

@@ -11,48 +11,42 @@
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:gravity="center"
-        android:text="Android Progress相关动画使用案例"
+        android:text="在普通View中完成的动画"
         android:textColor="@color/colorAccent" />
 
-    <com.androidanimation.progressanim.sample1.MultiProcessStateView
-        android:id="@+id/multi_progress_state_view"
+    <com.androidanimation.progressanim.sample2.MultiProcessStateView
+        android:id="@+id/multi_progress_state_normal_view"
         android:layout_width="150dp"
         android:layout_height="150dp"
-        android:layout_gravity="center_horizontal" />
+        android:layout_gravity="center_horizontal"
+        android:background="@android:color/transparent" />
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="10dp"
-        android:gravity="center_vertical"
         android:orientation="horizontal">
 
         <Button
-            android:id="@+id/multi_progress_complete_success"
+            android:id="@+id/multi_progress_complete_success_normal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="成功动画" />
+            android:text="完成动画：成功" />
 
         <Button
-            android:id="@+id/multi_progress_complete_fail"
+            android:id="@+id/multi_progress_complete_fail_normal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="5dp"
-            android:text="失败动画" />
+            android:layout_marginLeft="10dp"
+            android:text="完成动画：失败" />
 
         <Button
-            android:id="@+id/multi_progress_smoothscroll"
+            android:id="@+id/multi_progress_smoothscroll_normal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="5dp"
+            android:layout_marginLeft="10dp"
             android:text="跳到80%" />
-
-        <Button
-            android:id="@+id/multi_progress_jump_normal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="5dp"
-            android:text="在普通View中实现此动画" />
     </LinearLayout>
+
 </LinearLayout>

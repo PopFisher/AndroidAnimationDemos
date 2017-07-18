@@ -1,4 +1,4 @@
-package com.androidanimation.progressanim.sample1;
+package com.androidanimation.progressanim;
 
 import android.animation.Animator;
 import android.annotation.TargetApi;

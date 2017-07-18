@@ -1,4 +1,4 @@
-package com.androidanimation.progressanim.sample1;
+package com.androidanimation.progressanim.sample2;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -18,6 +18,8 @@ import java.util.List;
 
 /**
  * Created by popfisher on 2017/7/13.
+ * 用普通View实现进度控制，结合属性动画，因为全部在UI线程执行，所以注意性能问题
+ * 如果有其他抢占UI线程资源的功能存在可能会导致动画卡顿
  */
 
 public class MultiCircleProgressNormalView extends View {
@@ -35,12 +37,15 @@ public class MultiCircleProgressNormalView extends View {
     private Paint mProgressPaint;
     /** 定义监听事件列表 */
     private List<IProgressStateChangeListener> mProgressStateChangeListeners;
+    /** 最大帧数 (1000 / 20) */
+    private static final int DRAW_INTERVAL = 20;
+    private static final int CLEAR_COLOR = 0xff0583f7;
 
     // ================ 外环进度数据 ============= //
     /** 顶部作为计数起点 270度, 计算圆上的任意点坐标时顺时针为正，右边是0 */
     private static final float HEAD_CIRCLE_START_ANGLE = 270f;
     /** 进度条每次移动的角度 */
-    private static final int OUTER_PROGRESS_STEP = 6;
+    private static int mOuterProgressStep = 6;
     /** 修改这个颜色数组就会出现不一样的渐变圆弧 */
     private int[] mColors = {
             0x0004d3ff, 0x0004d3ff, 0x4004d3ff, 0x8004d3ff, 0xff04d3ff
@@ -55,8 +60,10 @@ public class MultiCircleProgressNormalView extends View {
     private float mOuterHeadCircleWidth;
     /** 外环的半径 */
     private float mOuterRadius = 0;
+    /** 外环背景的半径 */
+    private float mOuterBgRadius = 0;
     /** 外环角度旋转总进度*/
-    private int mOuterAngleProgressTotal = 0;
+    private float mOuterAngleProgressTotal = 0;
     /** 外环头部圆选择角度 */
     private float mOuterHeadCircleAngleTotal = 0;
     private double mOuterHeadCircleAngleTotalMath = 0;
@@ -69,14 +76,15 @@ public class MultiCircleProgressNormalView extends View {
     /** 用于定义的圆弧的形状和大小的界限 */
     private RectF mInnerArcLimitRect = new RectF();
     /** 内环总弧长 */
-    private int mInnerArcAngle = 0;
+    private float mInnerArcAngle = 0;
 
     // ================ 中间百分比数据 ============= //
     private static final int MAX_PROGRESS_DEFAULT = 100;
+    private static final int MIN_PROGRESS_DEFAULT = 1;
     private static final int PERCENT_BASE = 100;
-    private static final int TOTAL_ANGLE = 360;
+    private static final float TOTAL_ANGLE = 360f;
     /** 当前进度 */
-    private int mCurProgress = 0;
+    private int mCurProgress = MIN_PROGRESS_DEFAULT;
     private String mCurProgressStr = "";
     private String mPercentSignStr = "%";
     /** 中间进度百分比的字符串的颜色 */
@@ -106,6 +114,7 @@ public class MultiCircleProgressNormalView extends View {
         mOuterRoundWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2, metrics);
         mInnerRoundWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 5, metrics);
         mOuterRadius = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 70, metrics);
+        mOuterBgRadius = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 75, metrics);
         mInnerRadius = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 60, metrics);
         mSpaceTextAndSign = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, metrics);
         mOuterHeadCircleWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2.5f, metrics);
@@ -120,6 +129,7 @@ public class MultiCircleProgressNormalView extends View {
 
     private void doDraw(Canvas canvas) {
         calculatePreValue();
+        drawBg(canvas);
         drawOuterGradientProgress(canvas);
         drawInnerProgress(canvas);
         drawPercentText(canvas);
@@ -138,6 +148,13 @@ public class MultiCircleProgressNormalView extends View {
         }
     }
 
+    private void drawBg(Canvas canvas) {
+        canvas.drawColor(CLEAR_COLOR);
+        mProgressPaint.setColor(CLEAR_COLOR);       // 设置进度的颜色
+        mProgressPaint.setStyle(Paint.Style.FILL);
+        canvas.drawCircle(mCenterX, mCenterY, mOuterBgRadius, mProgressPaint); // 画出圆环
+    }
+
     private void drawOuterGradientProgress(final Canvas canvas) {
         mProgressPaint.setStrokeWidth(mOuterRoundWidth);         // 设置圆环的宽度
         mProgressPaint.setColor(mRoundProgressColor);       // 设置进度的颜色
@@ -152,7 +169,7 @@ public class MultiCircleProgressNormalView extends View {
         mProgressPaint.setShader(mOuterSweepGradient);
         canvas.drawCircle(mCenterX, mCenterY, mOuterRadius, mProgressPaint); // 画出圆环
         drawOuterArcHeadCircle(canvas);
-        mOuterAngleProgressTotal += OUTER_PROGRESS_STEP;
+        mOuterAngleProgressTotal += mOuterProgressStep;
         if (mOuterAngleProgressTotal > TOTAL_ANGLE) {
             mOuterAngleProgressTotal -= TOTAL_ANGLE;
         }
@@ -164,8 +181,8 @@ public class MultiCircleProgressNormalView extends View {
         mProgressPaint.setStyle(Paint.Style.FILL);
         // 一开始从顶部开始旋转
         mOuterHeadCircleAngleTotal = (HEAD_CIRCLE_START_ANGLE + mOuterAngleProgressTotal);
-        if (mOuterHeadCircleAngleTotal - 360f > 0) {
-            mOuterHeadCircleAngleTotal -= 360f;
+        if (mOuterHeadCircleAngleTotal - TOTAL_ANGLE > 0) {
+            mOuterHeadCircleAngleTotal -= TOTAL_ANGLE;
         }
         // 根据旋转角度计算圆上当前位置点坐标，再以当前位置左边点位圆心画一个圆
         mOuterHeadCircleAngleTotalMath = mOuterHeadCircleAngleTotal * Math.PI / 180f;
@@ -210,39 +227,52 @@ public class MultiCircleProgressNormalView extends View {
     }
 
     /**
-     * progress的范围 0~100
-     * @param progress
+     * progress的范围 0~360
+     * @param angle
      */
-    public void setProgress(int progress) {
-        if (progress < 0) {
-            throw new IllegalArgumentException("progress not less than 0");
+    public void setAngle(float angle) {
+        if (angle - TOTAL_ANGLE > 0) {
+            angle = TOTAL_ANGLE;
+        } else if (angle < 0) {
+            angle = 0;
         }
-        if (progress > MAX_PROGRESS_DEFAULT) {
+        mInnerArcAngle = angle;
+        int progress = (int) (mInnerArcAngle / TOTAL_ANGLE * PERCENT_BASE);
+        if (progress == mCurProgress) { // 相同进度不重复设置，避免notify重复通知
+            return;
+        }
+        if (progress < MIN_PROGRESS_DEFAULT) {
+            progress = MIN_PROGRESS_DEFAULT;
+        } else if (progress > MAX_PROGRESS_DEFAULT) {
             progress = MAX_PROGRESS_DEFAULT;
-        } else if (progress < 0) {
-            progress = 0;
         }
         mCurProgress = progress;
-        mInnerArcAngle = TOTAL_ANGLE * progress / PERCENT_BASE;
         mCurProgressStr = "" + mCurProgress;
         notifyProgressStateChangeListeners();
     }
 
-    public int getProgress() {
-        return mCurProgress;
+    public float getAngle() {
+        return mInnerArcAngle;
     }
 
     public interface IProgressStateChangeListener {
+        /** 进度执行到100%时回调 */
         void onFinished();
+        /** 执行到外部指定的进度回调 */
+        void onSmoothScrollFinish();
     }
 
     private void notifyProgressStateChangeListeners() {
+        if (mProgressStateChangeListeners == null) {
+            return;
+        }
         if (mCurProgress == MAX_PROGRESS_DEFAULT) {
             for (IProgressStateChangeListener listener : mProgressStateChangeListeners) {
                 if (listener != null) {
                     listener.onFinished();
                 }
             }
+            return;
         }
     }
 
