@@ -139,7 +139,7 @@ public class MultiCircleProgressView extends SurfaceView implements SurfaceHolde
         smoothScrollToAngle(TOTAL_ANGLE);
     }
 
-    private float mSmoothScrollToAngle = 0;
+    private float mSmoothScrollTotalAngle = 0;
     /**
      * 平滑旋转到指定的角度（0~360度）
      * @param angle 0~360度
@@ -147,7 +147,7 @@ public class MultiCircleProgressView extends SurfaceView implements SurfaceHolde
     private void smoothScrollToAngle(float angle) {
         isNeedCompleteQuickly = true;
         mQuickStartAngle = 0;
-        mSmoothScrollToAngle = angle;
+        mSmoothScrollTotalAngle = angle;
     }
 
     private int mSmoothScrollToProgress = 0;
@@ -214,10 +214,6 @@ public class MultiCircleProgressView extends SurfaceView implements SurfaceHolde
         public void run() {
             long deltaTime;
             long timeStartPerDraw;
-            long timerStartMillis = System.currentTimeMillis();
-            float totalAngle = TOTAL_ANGLE;
-            float step1 = 180f / 10000f; // 前10秒每秒走5% 即18度
-            float step2 = 175f / 20000f; // 10秒到30秒走175度
             while (isRunning) {
                 Canvas canvas = null;
                 timeStartPerDraw = System.currentTimeMillis();
@@ -226,30 +222,6 @@ public class MultiCircleProgressView extends SurfaceView implements SurfaceHolde
                         Surface surface = surfaceHolder.getSurface();
                         if (surface != null && surface.isValid()) {
                             canvas = surfaceHolder.lockCanvas(null);
-                        }
-                        if (isNeedCompleteQuickly) {
-                            if (mQuickStartAngle == 0) {
-                                timerStartMillis = System.currentTimeMillis();
-                                mQuickStartAngle = getAngle();
-                                totalAngle = mSmoothScrollToAngle;
-                                mNeedQuickCompleteAngle = totalAngle - mQuickStartAngle;
-                                if (mNeedQuickCompleteAngle < 0) {
-                                    mNeedQuickCompleteAngle = 0;
-                                }
-                            }
-                            deltaTime = System.currentTimeMillis() - timerStartMillis;
-                            if (deltaTime <= 2000) {    // 快速结束时2秒走完剩下的
-                                setAngle(mQuickStartAngle + mNeedQuickCompleteAngle / 2000f * deltaTime);
-                            } else {
-                                setAngle(totalAngle);
-                            }
-                        } else {
-                            deltaTime = System.currentTimeMillis() - timerStartMillis;
-                            if (deltaTime <= 10000) {   // 前10秒每秒走5% 即18度，总共走掉180度
-                                setAngle(step1 * deltaTime);
-                            } else if (deltaTime <= 30000f) { // 10秒到30秒走175度
-                                setAngle(180f + (step2 * (deltaTime - 10000)));
-                            }
                         }
                         if (canvas != null) {
                             doDraw(canvas);
@@ -297,9 +269,43 @@ public class MultiCircleProgressView extends SurfaceView implements SurfaceHolde
         canvas.clipPath(mBgCirclePath, Region.Op.REPLACE);
     }
 
+    private long mTimerStartMillis = 0;
+    private long mDeltaTime = 0;
+    private float mStep1 = 180f / 10000f; // 前10秒每秒走5% 即18度
+    private float mStep2 = 175f / 20000f; // 10秒到30秒走175度
+    private void calculateAngle() {
+        if (mTimerStartMillis == 0) {
+            mTimerStartMillis = System.currentTimeMillis();
+        }
+        if (isNeedCompleteQuickly) {
+            if (mQuickStartAngle == 0) {
+                mTimerStartMillis = System.currentTimeMillis();
+                mQuickStartAngle = getAngle();
+                mNeedQuickCompleteAngle = mSmoothScrollTotalAngle - mQuickStartAngle;
+                if (mNeedQuickCompleteAngle < 0) {
+                    mNeedQuickCompleteAngle = 0;
+                }
+            }
+            mDeltaTime = System.currentTimeMillis() - mTimerStartMillis;
+            if (mDeltaTime <= 2000) {    // 快速结束时2秒走完剩下的
+                setAngle(mQuickStartAngle + mNeedQuickCompleteAngle / 2000f * mDeltaTime);
+            } else {
+                setAngle(mSmoothScrollTotalAngle);
+            }
+        } else {
+            mDeltaTime = System.currentTimeMillis() - mTimerStartMillis;
+            if (mDeltaTime <= 10000) {   // 前10秒每秒走5% 即18度，总共走掉180度
+                setAngle(mStep1 * mDeltaTime);
+            } else if (mDeltaTime <= 30000f) { // 10秒到30秒走175度
+                setAngle(180f + (mStep2 * (mDeltaTime - 10000)));
+            }
+        }
+    }
+
     private void doDraw(Canvas canvas) {
         calculatePreValue();
-        drawBg(canvas);
+        canvas.drawColor(CLEAR_COLOR);
+        calculateAngle();
         drawOuterGradientProgress(canvas);
         drawInnerProgress(canvas);
         drawPercentText(canvas);
@@ -315,13 +321,6 @@ public class MultiCircleProgressView extends SurfaceView implements SurfaceHolde
         if (mInnerArcLimitRect.isEmpty()) {
             mInnerArcLimitRect.set(mCenterX - mInnerRadius, mCenterX - mInnerRadius, mCenterX + mInnerRadius, mCenterX + mInnerRadius);
         }
-    }
-
-    private void drawBg(Canvas canvas) {
-        canvas.drawColor(CLEAR_COLOR);
-        mProgressPaint.setColor(CLEAR_COLOR);       // 设置进度的颜色
-        mProgressPaint.setStyle(Paint.Style.FILL);
-        canvas.drawCircle(mCenterX, mCenterY, mOuterBgRadius, mProgressPaint); // 画出圆环
     }
 
     private void drawOuterGradientProgress(final Canvas canvas) {
