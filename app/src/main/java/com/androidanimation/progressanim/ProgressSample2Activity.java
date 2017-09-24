@@ -23,6 +23,7 @@ public class ProgressSample2Activity extends Activity implements View.OnClickLis
         findViewById(R.id.multi_progress_complete_success_normal).setOnClickListener(this);
         findViewById(R.id.multi_progress_complete_fail_normal).setOnClickListener(this);
         findViewById(R.id.multi_progress_smoothscroll_normal).setOnClickListener(this);
+        findViewById(R.id.restart).setOnClickListener(this);
     }
 
     @Override
@@ -66,6 +67,9 @@ public class ProgressSample2Activity extends Activity implements View.OnClickLis
                         Log.d("Progress", "onProgressFinish");
                     }
                 });
+                break;
+            case R.id.restart:
+                mMultiProgressStateViewController.reStart();
                 break;
             case R.id.multi_progress_smoothscroll_normal:
                 mMultiProgressStateViewController.smoothScrollToProgress(80, new MultiProgressStateViewController.ISmoothScrollListener() {

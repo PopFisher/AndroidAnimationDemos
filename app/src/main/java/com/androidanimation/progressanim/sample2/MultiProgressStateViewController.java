@@ -26,8 +26,6 @@ public class MultiProgressStateViewController {
 
     /** 传递进来的变量是成功还是失败 */
     private boolean mIsSuccess = false;
-    /** 是否需要进度，蒙层上需要，Activity里面只需要结果 */
-    private boolean mIsNeedProgress = true;
     private ProgressController mProgressController;
     private Handler mHandler = new Handler(Looper.getMainLooper());
 
@@ -60,20 +58,11 @@ public class MultiProgressStateViewController {
     }
 
     public MultiProgressStateViewController(MultiProcessStateView multiProcessStateView) {
-        this(multiProcessStateView, true);
-    }
-
-    public MultiProgressStateViewController(MultiProcessStateView multiProcessStateView, boolean isNeedProgress) {
         mProgressStateView = multiProcessStateView.getProgressStateView();
         mSuccessStateView = multiProcessStateView.getSuccessStateView();
         mFailStateView = multiProcessStateView.getFailStateView();
-        mIsNeedProgress = isNeedProgress;
-        if (isNeedProgress) {
-            mProgressController = new ProgressController(mProgressStateView);
-            mProgressStateView.addProgressStateListener(mProgressStateChangeListener);
-        } else {
-            mProgressStateView.setVisibility(View.GONE);
-        }
+        mProgressController = new ProgressController(mProgressStateView);
+        mProgressStateView.addProgressStateListener(mProgressStateChangeListener);
     }
 
     private MultiCircleProgressNormalView.IProgressStateChangeListener
@@ -153,9 +142,23 @@ public class MultiProgressStateViewController {
     }
 
     public void start() {
+        mProgressStateView.reset();
         if (mProgressController != null) {
             mProgressController.autoStartAnim();
         }
+    }
+
+    public void reStart() {
+        mHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                ViewHelper.setAlpha(mProgressStateView, 1.0f);
+                mProgressStateView.setVisibility(View.VISIBLE);
+                mSuccessStateView.setVisibility(View.GONE);
+                mFailStateView.setVisibility(View.GONE);
+                start();
+            }
+        }, STATE_CHANGE_ANIM_DURATION);
     }
 
     public void complete(boolean success) {
@@ -165,22 +168,12 @@ public class MultiProgressStateViewController {
     public void complete(boolean success, IViewStateChangeListener listener) {
         setViewStateChangeListener(listener);
         mIsSuccess = success;
-        if (mIsNeedProgress) {
-            mProgressController.completeProgress();
-        } else {
-            mSuccessStateView.setVisibility(mIsSuccess ? View.VISIBLE : View.GONE);
-            mFailStateView.setVisibility(mIsSuccess ? View.GONE : View.VISIBLE);
-            if (listener != null) {
-                listener.onResultViewShowFinish(mIsSuccess);
-            }
-        }
+        mProgressController.completeProgress();
     }
 
     public void smoothScrollToProgress(int progress, ISmoothScrollListener listener) {
         setSmoothScrollListener(listener);
-        if (mIsNeedProgress) {
-            mProgressController.smoothScrollToProgress(progress); // 走到90%停止
-        }
+        mProgressController.smoothScrollToProgress(progress); // 走到90%停止
     }
 
     public void onDestroy() {

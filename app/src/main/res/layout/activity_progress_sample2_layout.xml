@@ -29,24 +29,25 @@
         android:orientation="horizontal">
 
         <Button
+            android:id="@+id/multi_progress_smoothscroll_normal"
+            style="@style/button_style_white_bg"
+            android:layout_weight="1"
+            android:text="跳到80%" />
+
+        <Button
             android:id="@+id/multi_progress_complete_success_normal"
             style="@style/button_style_white_bg"
             android:layout_weight="1"
+            android:layout_marginLeft="10dp"
             android:text="完成动画：成功" />
 
         <Button
             android:id="@+id/multi_progress_complete_fail_normal"
             style="@style/button_style_white_bg"
-            android:layout_marginLeft="10dp"
             android:layout_weight="1"
+            android:layout_marginLeft="10dp"
             android:text="完成动画：失败" />
 
-        <Button
-            android:id="@+id/multi_progress_smoothscroll_normal"
-            style="@style/button_style_white_bg"
-            android:layout_marginLeft="10dp"
-            android:layout_weight="1"
-            android:text="跳到80%" />
     </LinearLayout>
 
     <Button

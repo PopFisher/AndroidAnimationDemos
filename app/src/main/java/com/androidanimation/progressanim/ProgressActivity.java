@@ -28,6 +28,7 @@ public class ProgressActivity extends Activity implements View.OnClickListener {
         findViewById(R.id.multi_progress_complete_fail).setOnClickListener(this);
         findViewById(R.id.multi_progress_smoothscroll).setOnClickListener(this);
         findViewById(R.id.multi_progress_jump_normal).setOnClickListener(this);
+        findViewById(R.id.restart).setOnClickListener(this);
     }
 
     @Override
@@ -94,6 +95,9 @@ public class ProgressActivity extends Activity implements View.OnClickListener {
                         Log.d("Progress", "onSmoothScrollFinish");
                     }
                 });
+                break;
+            case R.id.restart:
+                mMultiProgressStateViewController.reStart();
                 break;
             case R.id.multi_progress_jump_normal:
                 startActivity(new Intent(this, ProgressSample2Activity.class));

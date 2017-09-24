@@ -25,8 +25,6 @@ public class MultiProgressStateViewController {
 
     /** 传递进来的变量是成功还是失败 */
     private boolean mIsSuccess = false;
-    /** 是否需要进度，蒙层上需要，Activity里面只需要结果 */
-    private boolean mIsNeedProgress = true;
     private Handler mHandler = new Handler(Looper.getMainLooper());
 
 
@@ -58,19 +56,10 @@ public class MultiProgressStateViewController {
     }
 
     public MultiProgressStateViewController(MultiProcessStateView multiProcessStateView) {
-        this(multiProcessStateView, true);
-    }
-
-    public MultiProgressStateViewController(MultiProcessStateView multiProcessStateView, boolean isNeedProgress) {
         mProgressStateView = multiProcessStateView.getProgressStateView();
         mSuccessStateView = multiProcessStateView.getSuccessStateView();
         mFailStateView = multiProcessStateView.getFailStateView();
-        mIsNeedProgress = isNeedProgress;
-        if (isNeedProgress) {
-            mProgressStateView.addProgressStateListener(mProgressStateChangeListener);
-        } else {
-            mProgressStateView.setVisibility(View.GONE);
-        }
+        mProgressStateView.addProgressStateListener(mProgressStateChangeListener);
     }
 
     private MultiCircleProgressView.IProgressStateChangeListener
@@ -97,6 +86,7 @@ public class MultiProgressStateViewController {
         hideProgressView(new Runnable() {
             @Override
             public void run() {
+                mProgressStateView.stop();
                 showResultStateView();
             }
         });
@@ -149,7 +139,6 @@ public class MultiProgressStateViewController {
         valueAnimator.start();
     }
 
-
     public void complete(boolean success) {
         complete(success, null);
     }
@@ -157,22 +146,26 @@ public class MultiProgressStateViewController {
     public void complete(boolean success, IViewStateChangeListener listener) {
         setViewStateChangeListener(listener);
         mIsSuccess = success;
-        if (mIsNeedProgress) {
-            mProgressStateView.completeQuickly();
-        } else {
-            mSuccessStateView.setVisibility(mIsSuccess ? View.VISIBLE : View.GONE);
-            mFailStateView.setVisibility(mIsSuccess ? View.GONE : View.VISIBLE);
-            if (listener != null) {
-                listener.onResultViewShowFinish(mIsSuccess);
-            }
-        }
+        mProgressStateView.completeQuickly();
     }
 
     public void smoothScrollToProgress(int progress, ISmoothScrollListener listener) {
         setSmoothScrollListener(listener);
-        if (mIsNeedProgress) {
-            mProgressStateView.smoothScrollToProgress(progress);
-        }
+        mProgressStateView.smoothScrollToProgress(progress);
+    }
+
+    public void reStart() {
+        mProgressStateView.stop();
+        mHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                ViewHelper.setAlpha(mProgressStateView, 1.0f);
+                mProgressStateView.setVisibility(View.VISIBLE);
+                mSuccessStateView.setVisibility(View.GONE);
+                mFailStateView.setVisibility(View.GONE);
+                mProgressStateView.start();
+            }
+        }, STATE_CHANGE_ANIM_DURATION);
     }
 
     public void onDestroy() {

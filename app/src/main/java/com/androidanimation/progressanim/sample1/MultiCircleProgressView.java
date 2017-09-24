@@ -164,7 +164,8 @@ public class MultiCircleProgressView extends SurfaceView implements SurfaceHolde
         smoothScrollToAngle(progress * TOTAL_ANGLE / PERCENT_BASE);
     }
 
-    private void start() {
+    public void start() {
+        reset();
         if (mDrawThread == null) {
             mDrawThread = new DrawThread(mSurfaceHolder, getContext());
         }
@@ -178,7 +179,10 @@ public class MultiCircleProgressView extends SurfaceView implements SurfaceHolde
         }
     }
 
-    private void stop() {
+    public void stop() {
+        if (mDrawThread == null) {
+            return;
+        }
         mDrawThread.isRunning = false;
         try {
             mDrawThread.join();
@@ -270,6 +274,12 @@ public class MultiCircleProgressView extends SurfaceView implements SurfaceHolde
         canvas.clipPath(mBgCirclePath, Region.Op.REPLACE);
     }
 
+    public void reset() {
+        mTimerStartMillis = 0;
+        isNeedCompleteQuickly = false;
+        setAngle(0.0f);
+    }
+
     private long mTimerStartMillis = 0;
     private long mDeltaTime = 0;
     private float mStep1 = 180f / 10000f; // 前10秒每秒走5% 即18度
@@ -325,8 +335,8 @@ public class MultiCircleProgressView extends SurfaceView implements SurfaceHolde
     }
 
     private void drawOuterGradientProgress(final Canvas canvas) {
-        mProgressPaint.setStrokeWidth(mOuterRoundWidth);         // 设置圆环的宽度
-        mProgressPaint.setColor(mRoundProgressColor);       // 设置进度的颜色
+        mProgressPaint.setStrokeWidth(mOuterRoundWidth);        // 设置圆环的宽度
+        mProgressPaint.setColor(mRoundProgressColor);           // 设置进度的颜色
         mProgressPaint.setAntiAlias(true);
         mProgressPaint.setStyle(Paint.Style.STROKE);
         // 定义一个梯度渲染，由于梯度渲染是从三点钟方向开始，所以再让他逆时针旋转90°，从0点开始
@@ -361,8 +371,8 @@ public class MultiCircleProgressView extends SurfaceView implements SurfaceHolde
     }
 
     private void drawInnerProgress(final Canvas canvas) {
-        mProgressPaint.setStrokeWidth(mInnerRoundWidth);         // 设置圆环的宽度
-        mProgressPaint.setColor(mRoundProgressColor);       // 设置进度的颜色
+        mProgressPaint.setStrokeWidth(mInnerRoundWidth);        // 设置圆环的宽度
+        mProgressPaint.setColor(mRoundProgressColor);           // 设置进度的颜色
         mProgressPaint.setAntiAlias(true);
         mProgressPaint.setStyle(Paint.Style.STROKE);
         mProgressPaint.setShader(null);

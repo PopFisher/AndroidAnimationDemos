@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:gravity="center"
-        android:text="Android Progress相关动画使用案例"
+        android:text="MultiCircleProgressView SurfaceView实现"
         android:textColor="@color/colorAccent" />
 
     <com.androidanimation.progressanim.sample1.MultiProcessStateView
@@ -26,30 +26,38 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="10dp"
-        android:padding="10dp"
         android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:padding="10dp">
+
+        <Button
+            android:id="@+id/multi_progress_smoothscroll"
+            style="@style/button_style_white_bg"
+            android:layout_weight="1"
+            android:text="跳到80%" />
 
         <Button
             android:id="@+id/multi_progress_complete_success"
             style="@style/button_style_white_bg"
+            android:layout_marginLeft="10dp"
             android:layout_weight="1"
             android:text="成功动画" />
 
         <Button
             android:id="@+id/multi_progress_complete_fail"
             style="@style/button_style_white_bg"
+            android:layout_marginLeft="10dp"
             android:layout_weight="1"
-            android:layout_marginLeft="5dp"
             android:text="失败动画" />
 
-        <Button
-            android:id="@+id/multi_progress_smoothscroll"
-            style="@style/button_style_white_bg"
-            android:layout_weight="1"
-            android:layout_marginLeft="5dp"
-            android:text="跳到80%" />
     </LinearLayout>
+
+    <Button
+        android:id="@+id/restart"
+        style="@style/button_style_white_bg"
+        android:layout_width="match_parent"
+        android:layout_margin="10dp"
+        android:text="重新开始" />
 
     <Button
         android:id="@+id/multi_progress_jump_normal"

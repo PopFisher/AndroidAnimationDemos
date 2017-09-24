@@ -227,6 +227,10 @@ public class MultiCircleProgressNormalView extends View {
         }
     }
 
+    public void reset() {
+        setAngle(0.0f);
+    }
+
     /**
      * progress的范围 0~360
      * @param angle
