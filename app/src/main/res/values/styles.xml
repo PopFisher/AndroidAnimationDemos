@@ -14,4 +14,8 @@
         <item name="android:padding">6dp</item>
         <item name="android:minHeight">40dp</item>
     </style>
+
+    <style name="ActivityTheme" parent="android:Theme.NoTitleBar">
+        <item name="android:background">#ccffffff</item>
+    </style>
 </resources>
