@@ -21,7 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by popfisher on 2017/7/13.
+ * 多状态圆形进度条控件，进度1~100可控，完成分为成功失败两种
+ * 在SurfaceView中绘制，不阻塞UI线程，可以自己控制帧率
  */
 
 public class MultiCircleProgressView extends SurfaceView implements SurfaceHolder.Callback  {

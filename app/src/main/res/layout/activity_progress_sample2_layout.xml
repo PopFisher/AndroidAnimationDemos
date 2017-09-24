@@ -16,37 +16,43 @@
 
     <com.androidanimation.progressanim.sample2.MultiProcessStateView
         android:id="@+id/multi_progress_state_normal_view"
-        android:layout_width="150dp"
-        android:layout_height="150dp"
+        android:layout_width="@dimen/multi_progress_view_size"
+        android:layout_height="@dimen/multi_progress_view_size"
         android:layout_gravity="center_horizontal"
         android:background="#ff0583f7" />
 
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="10dp"
+        android:layout_margin="10dp"
         android:orientation="horizontal">
 
         <Button
             android:id="@+id/multi_progress_complete_success_normal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            style="@style/button_style_white_bg"
+            android:layout_weight="1"
             android:text="完成动画：成功" />
 
         <Button
             android:id="@+id/multi_progress_complete_fail_normal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            style="@style/button_style_white_bg"
             android:layout_marginLeft="10dp"
+            android:layout_weight="1"
             android:text="完成动画：失败" />
 
         <Button
             android:id="@+id/multi_progress_smoothscroll_normal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            style="@style/button_style_white_bg"
             android:layout_marginLeft="10dp"
+            android:layout_weight="1"
             android:text="跳到80%" />
     </LinearLayout>
 
+    <Button
+        android:id="@+id/restart"
+        style="@style/button_style_white_bg"
+        android:layout_width="match_parent"
+        android:layout_margin="10dp"
+        android:text="重新开始" />
 </LinearLayout>

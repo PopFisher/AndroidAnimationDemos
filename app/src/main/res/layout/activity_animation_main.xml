@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_animation_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -13,18 +12,20 @@
         android:layout_height="50dp"
         android:gravity="center"
         android:text="Android动画使用案例"
-        android:textColor="@color/colorAccent"/>
+        android:textColor="@color/colorAccent" />
 
     <Button
         android:id="@+id/finger_switch_on_anim_activity"
+        style="@style/button_style_white_bg"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="手势滑动开关动画"/>
+        android:layout_margin="10dp"
+        android:text="手势滑动开关动画" />
 
     <Button
         android:id="@+id/progress_anim_activity"
+        style="@style/button_style_white_bg"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="圆形进度相关动画"/>
+        android:layout_margin="10dp"
+        android:text="圆形进度相关动画" />
 
 </LinearLayout>

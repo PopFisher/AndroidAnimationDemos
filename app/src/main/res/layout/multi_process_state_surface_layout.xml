@@ -5,8 +5,8 @@
 
     <com.androidanimation.progressanim.sample1.MultiCircleProgressView
         android:id="@+id/process_animating_state_view"
-        android:layout_width="150dp"
-        android:layout_height="150dp"
+        android:layout_width="@dimen/multi_progress_view_size"
+        android:layout_height="@dimen/multi_progress_view_size"
         android:layout_gravity="center"
         android:background="@android:color/transparent"/>
 
