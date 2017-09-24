@@ -18,8 +18,7 @@
         android:id="@+id/multi_progress_state_normal_view"
         android:layout_width="@dimen/multi_progress_view_size"
         android:layout_height="@dimen/multi_progress_view_size"
-        android:layout_gravity="center_horizontal"
-        android:background="#ff0583f7" />
+        android:layout_gravity="center_horizontal" />
 
     <LinearLayout
         android:layout_width="match_parent"

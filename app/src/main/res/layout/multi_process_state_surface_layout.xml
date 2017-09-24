@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content" >
+    android:layout_width="@dimen/multi_progress_view_size"
+    android:layout_height="@dimen/multi_progress_view_size"
+    android:background="@color/progress_bg_color">
 
     <com.androidanimation.progressanim.sample1.MultiCircleProgressView
         android:id="@+id/process_animating_state_view"
         android:layout_width="@dimen/multi_progress_view_size"
         android:layout_height="@dimen/multi_progress_view_size"
         android:layout_gravity="center"
-        android:background="@android:color/transparent"/>
+        android:background="@android:color/transparent" />
 
     <ImageView
         android:id="@+id/process_finish_success_state_view"

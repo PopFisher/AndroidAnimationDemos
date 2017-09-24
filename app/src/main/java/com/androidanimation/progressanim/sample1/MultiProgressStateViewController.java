@@ -87,6 +87,7 @@ public class MultiProgressStateViewController {
             @Override
             public void run() {
                 mProgressStateView.stop();
+                mProgressStateView.setVisibility(View.GONE);
                 showResultStateView();
             }
         });
